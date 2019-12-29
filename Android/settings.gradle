@@ -1,0 +1,2 @@
+include ':app', ':delphiintents'
+rootProject.name='SendIntent'

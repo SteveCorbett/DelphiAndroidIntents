@@ -1,6 +1,8 @@
 # Delphi Honeywell Scanner Demo Using Intents
 ## General Overview
-This repository demonstrates the use of Android Intents to communicate with a Honeywell CT-40 barcode scanner running Android 8.1.0. However, the method described can be easily adapted to enable intents to be sent to other Android applications.
+This repository demonstrates using a small Java class to send Android Intents to a Honeywell CT-40 barcode scanner running Android 8.1.0. However, the method described can be easily adapted to enable intents to be sent to other Android applications. 
+
+This read-me file also contains step-by-step instructions on how to compile a Java class into a .jar file and include them in a Delphi application.
 
 Prior to Android 8 (aka Oreo) it was possible to broadcast "implicit" intents to communicate between applications. Kind of like "Here's a message,
 does anyone want to handle it?". To send an "explicit" intent to another application requires a few extra steps:
@@ -8,9 +10,7 @@ does anyone want to handle it?". To send an "explicit" intent to another applica
 * Determine which applications can handle the type of intent you wish to send
 * For each application that can handle the type of intent, create a new intent and send it specifically to that application.
 
-Unfortunately, Delphi (as of 10.3.3) does not have the ability to do this out of the box (as far as I could determine).
-
-My solution is to create a small Java class that can broadcast an intent, compile it into a .jar file and use this in my Delphi application.
+Footnote: A pure Delphi implementation of this can be found at https://gist.github.com/DelphiWorlds/8eaa900ea9df70df902bee2123a64c6d?fbclid=IwAR0CwsAFIFvXA0TGSVUIMifXv1qWZEK4WZieeSuSXVyTHWBnCInOzwa6DdY
 
 ## Honeywell Scanner
 To receive scans from a Honeywell Android scanner there's a couple of requirements:
@@ -26,7 +26,6 @@ To receive scans from a Honeywell Android scanner there's a couple of requiremen
 * The project targets Delphi 10.3 Update 3 and is based on an existing application. It will compile with prior releases but will need changes to the deployment options.
 * The project creates output files in C:\temp\HoneywellScanner\Android as my project files are located on a network share and FMX projects do not like this.
 * To handle the receiving of intents, the project uses a component derived from https://github.com/barisatalay/delphi-android-broadcast-receiver-component (There have been no updates to this repository since (October 2014)
-
 
 ## Creating The Android .Jar File
 The Delphi project repository contains the .compiled jar file and Delphi/Java bridge unit, Android.JNI.DelphiIntents.pas. These can be added "as is" to any Delphi project needing to send intents on Oreo or above. The following describes the steps I took to generate these. (Not being a Java programmer, there may be a more efficient way of achieving this.)

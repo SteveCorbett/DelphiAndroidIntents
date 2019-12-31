@@ -26,6 +26,7 @@ type
     procedure OnPause;
     procedure OnResume;
     procedure SendIntent(Intent: JIntent);
+    procedure SendBroadcast(const AIntent: JIntent);
   public
     { Public declarations }
   end;
@@ -181,6 +182,34 @@ var
 begin
   appContext := TAndroidHelper.Context.getApplicationContext;
   TJSendIntent.JavaClass.appSendBroadcast(appContext, Intent);
+end;
+
+procedure TformMain.SendBroadcast(const AIntent: JIntent);
+{
+  This is the equivalent Delphi only code as provided by David Nottage at
+  https://gist.github.com/DelphiWorlds/8eaa900ea9df70df902bee2123a64c6d?fbclid=IwAR0CwsAFIFvXA0TGSVUIMifXv1qWZEK4WZieeSuSXVyTHWBnCInOzwa6DdY
+}
+var
+  LResolveInfoList: JList;
+  LResolveInfo: JResolveInfo;
+  LComponentName: JComponentName;
+  LExplicitIntent: JIntent;
+  I: Integer;
+begin
+  if TJBuild_VERSION.JavaClass.SDK_INT >= 26 then
+  begin
+    LResolveInfoList := TAndroidHelper.Context.getPackageManager.queryBroadcastReceivers(AIntent, 0);
+    for I := 0 to LResolveInfoList.size - 1 do
+    begin
+      LResolveInfo := TJResolveInfo.Wrap(TAndroidHelper.JObjectToID(LResolveInfoList.get(I)));
+      LComponentName := TJComponentName.JavaClass.init(LResolveInfo.activityInfo.applicationInfo.packageName, LResolveInfo.activityInfo.name);
+      LExplicitIntent := TJIntent.JavaClass.init(AIntent);
+      LExplicitIntent.setComponent(LComponentName);
+      TAndroidHelper.Context.sendBroadcast(LExplicitIntent);
+    end;
+  end
+  else
+    TAndroidHelper.Context.sendBroadcast(AIntent);
 end;
 
 end.

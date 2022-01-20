@@ -25,6 +25,7 @@ type
       AContext: TObject): Boolean;
     procedure OnPause;
     procedure OnResume;
+    procedure ReleaseScanner;
     procedure SendIntent(Intent: JIntent);
     procedure SendBroadcast(const AIntent: JIntent);
   public
@@ -144,6 +145,7 @@ begin
 
     Intent := TJIntent.Create;
     Intent.setAction(StringToJString(ACTION_RELEASE_SCANNER));
+    ReleaseScanner;
     SendIntent(Intent);
     log.d('Released Scanner');
   end;
@@ -180,8 +182,9 @@ procedure TformMain.SendIntent(Intent: JIntent);
 var
   appContext: JContext;
 begin
-  appContext := TAndroidHelper.Context.getApplicationContext;
-  TJSendIntent.JavaClass.appSendBroadcast(appContext, Intent);
+//  appContext := TAndroidHelper.Context.getApplicationContext;
+//  TJSendIntent.JavaClass.appSendBroadcast(appContext, Intent);
+  SendBroadcast(Intent);
 end;
 
 procedure TformMain.SendBroadcast(const AIntent: JIntent);
@@ -198,18 +201,55 @@ var
 begin
   if TJBuild_VERSION.JavaClass.SDK_INT >= 26 then
   begin
-    LResolveInfoList := TAndroidHelper.Context.getPackageManager.queryBroadcastReceivers(AIntent, 0);
+    LResolveInfoList := TAndroidHelper.Context.getPackageManager.
+      queryBroadcastReceivers(AIntent, 0);
+    I := LResolveInfoList.size;
+    I := I + 1;
     for I := 0 to LResolveInfoList.size - 1 do
     begin
-      LResolveInfo := TJResolveInfo.Wrap(TAndroidHelper.JObjectToID(LResolveInfoList.get(I)));
-      LComponentName := TJComponentName.JavaClass.init(LResolveInfo.activityInfo.applicationInfo.packageName, LResolveInfo.activityInfo.name);
+      LResolveInfo := TJResolveInfo.Wrap
+        (TAndroidHelper.JObjectToID(LResolveInfoList.get(I)));
+      LComponentName := TJComponentName.JavaClass.init
+        (LResolveInfo.activityInfo.applicationInfo.packageName,
+        LResolveInfo.activityInfo.name);
       LExplicitIntent := TJIntent.JavaClass.init(AIntent);
       LExplicitIntent.setComponent(LComponentName);
-      TAndroidHelper.Context.sendBroadcast(LExplicitIntent);
+      TAndroidHelper.Context.SendBroadcast(LExplicitIntent);
     end;
   end
   else
-    TAndroidHelper.Context.sendBroadcast(AIntent);
+    TAndroidHelper.Context.SendBroadcast(AIntent);
+end;
+
+procedure TformMain.ReleaseScanner;
+var
+  Intent: JIntent;
+  ix: Integer;
+  matches: JList;
+  packageManager: JPackageManager;
+  appContext: JContext;
+  LResolveInfo: JResolveInfo;
+  LComponentName: JComponentName;
+  LExplicitIntent: JIntent;
+begin
+  Intent := TJIntent.Create;
+  Intent.setAction(StringToJString(ACTION_RELEASE_SCANNER));
+  appContext := TAndroidHelper.Context;
+  packageManager := appContext.getPackageManager;
+  matches := packageManager.queryBroadcastReceivers(Intent, 0);
+  ix := matches.size; // This is always 0??
+  ix := Ix + 1;
+  for ix := 0 to matches.size - 1 do
+  begin
+      LResolveInfo := TJResolveInfo.Wrap
+        (TAndroidHelper.JObjectToID(matches.get(ix)));
+      LComponentName := TJComponentName.JavaClass.init
+        (LResolveInfo.activityInfo.applicationInfo.packageName,
+        LResolveInfo.activityInfo.name);
+      LExplicitIntent := TJIntent.JavaClass.init(Intent);
+      LExplicitIntent.setComponent(LComponentName);
+      TAndroidHelper.Context.SendBroadcast(LExplicitIntent);
+  end;
 end;
 
 end.

@@ -25,7 +25,8 @@ To receive scans from a Honeywell Android scanner there's a couple of requiremen
 ## Delphi Project
 * The project targets Delphi 10.3 Update 3 and is based on an existing application. It will compile with prior releases but will need changes to the deployment options.
 * The project creates output files in C:\temp\HoneywellScanner\Android as my project files are located on a network share and FMX projects do not like this.
-* To handle the receiving of intents, the project uses a component derived from https://github.com/barisatalay/delphi-android-broadcast-receiver-component (There have been no updates to this repository since (October 2014)
+* To handle the receiving of intents, the project uses a component derived from https://github.com/barisatalay/delphi-android-broadcast-receiver-component (There have been no updates to this repository since October 2014)
+* The Delphi equivalent of the Java code has been included in the main unit for reference. 
 
 ## Creating The Android .Jar File
 The Delphi project repository contains the .compiled jar file and Delphi/Java bridge unit, Android.JNI.DelphiIntents.pas. These can be added "as is" to any Delphi project needing to send intents on Oreo or above. The following describes the steps I took to generate these. (Not being a Java programmer, there may be a more efficient way of achieving this.)

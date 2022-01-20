@@ -25,7 +25,6 @@ type
       AContext: TObject): Boolean;
     procedure OnPause;
     procedure OnResume;
-    procedure ReleaseScanner;
     procedure SendIntent(Intent: JIntent);
     procedure SendBroadcast(const AIntent: JIntent);
   public
@@ -41,7 +40,7 @@ implementation
 
 uses
   FMX.Platform.Android, Androidapi.Helpers, Androidapi.JNI.Os,
-  Androidapi.JNI.JavaTypes, Android.JNI.DelphiIntents;
+  Androidapi.JNI.JavaTypes;
 
 const
   ACTION_CLAIM_SCANNER = 'com.honeywell.aidc.action.ACTION_CLAIM_SCANNER';
@@ -51,6 +50,7 @@ const
   EXTRA_SCANNER = 'com.honeywell.aidc.extra.EXTRA_SCANNER';
   EXTRA_PROFILE = 'com.honeywell.aidc.extra.EXTRA_PROFILE';
   EXTRA_PROPERTIES = 'com.honeywell.aidc.extra.EXTRA_PROPERTIES';
+  INTERMEC_DCS ='com.intermec.datacollectionservice';
 
 procedure TformMain.BroadcastReceiverOnReceive(Context: JContext;
   Intent: JIntent);
@@ -145,7 +145,7 @@ begin
 
     Intent := TJIntent.Create;
     Intent.setAction(StringToJString(ACTION_RELEASE_SCANNER));
-    ReleaseScanner;
+    Intent.setPackage(StringToJString(INTERMEC_DCS));
     SendIntent(Intent);
     log.d('Released Scanner');
   end;
@@ -160,6 +160,7 @@ begin
   begin
     Intent := TJIntent.Create;
     Intent.setAction(StringToJString(ACTION_CLAIM_SCANNER));
+    Intent.setPackage(StringToJString(INTERMEC_DCS));
 
     properties := TJBundle.Create;
     properties.putBoolean(StringToJString('DPR_DATA_INTENT'), True);
@@ -179,77 +180,14 @@ begin
 end;
 
 procedure TformMain.SendIntent(Intent: JIntent);
-var
-  appContext: JContext;
 begin
-//  appContext := TAndroidHelper.Context.getApplicationContext;
-//  TJSendIntent.JavaClass.appSendBroadcast(appContext, Intent);
   SendBroadcast(Intent);
 end;
 
 procedure TformMain.SendBroadcast(const AIntent: JIntent);
-{
-  This is the equivalent Delphi only code as provided by David Nottage at
-  https://gist.github.com/DelphiWorlds/8eaa900ea9df70df902bee2123a64c6d?fbclid=IwAR0CwsAFIFvXA0TGSVUIMifXv1qWZEK4WZieeSuSXVyTHWBnCInOzwa6DdY
-}
-var
-  LResolveInfoList: JList;
-  LResolveInfo: JResolveInfo;
-  LComponentName: JComponentName;
-  LExplicitIntent: JIntent;
-  I: Integer;
-begin
-  if TJBuild_VERSION.JavaClass.SDK_INT >= 26 then
-  begin
-    LResolveInfoList := TAndroidHelper.Context.getPackageManager.
-      queryBroadcastReceivers(AIntent, 0);
-    I := LResolveInfoList.size;
-    I := I + 1;
-    for I := 0 to LResolveInfoList.size - 1 do
-    begin
-      LResolveInfo := TJResolveInfo.Wrap
-        (TAndroidHelper.JObjectToID(LResolveInfoList.get(I)));
-      LComponentName := TJComponentName.JavaClass.init
-        (LResolveInfo.activityInfo.applicationInfo.packageName,
-        LResolveInfo.activityInfo.name);
-      LExplicitIntent := TJIntent.JavaClass.init(AIntent);
-      LExplicitIntent.setComponent(LComponentName);
-      TAndroidHelper.Context.SendBroadcast(LExplicitIntent);
-    end;
-  end
-  else
-    TAndroidHelper.Context.SendBroadcast(AIntent);
-end;
 
-procedure TformMain.ReleaseScanner;
-var
-  Intent: JIntent;
-  ix: Integer;
-  matches: JList;
-  packageManager: JPackageManager;
-  appContext: JContext;
-  LResolveInfo: JResolveInfo;
-  LComponentName: JComponentName;
-  LExplicitIntent: JIntent;
 begin
-  Intent := TJIntent.Create;
-  Intent.setAction(StringToJString(ACTION_RELEASE_SCANNER));
-  appContext := TAndroidHelper.Context;
-  packageManager := appContext.getPackageManager;
-  matches := packageManager.queryBroadcastReceivers(Intent, 0);
-  ix := matches.size; // This is always 0??
-  ix := Ix + 1;
-  for ix := 0 to matches.size - 1 do
-  begin
-      LResolveInfo := TJResolveInfo.Wrap
-        (TAndroidHelper.JObjectToID(matches.get(ix)));
-      LComponentName := TJComponentName.JavaClass.init
-        (LResolveInfo.activityInfo.applicationInfo.packageName,
-        LResolveInfo.activityInfo.name);
-      LExplicitIntent := TJIntent.JavaClass.init(Intent);
-      LExplicitIntent.setComponent(LComponentName);
-      TAndroidHelper.Context.SendBroadcast(LExplicitIntent);
-  end;
+  TAndroidHelper.Context.SendBroadcast(AIntent);
 end;
 
 end.

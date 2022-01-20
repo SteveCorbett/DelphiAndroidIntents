@@ -4,8 +4,7 @@ uses
   System.StartUpCopy,
   FMX.Forms,
   Main in 'Main.pas' {formMain},
-  BroadcastReceiver in 'BroadcastReceiver.pas',
-  Android.JNI.DelphiIntents in 'Android.JNI.DelphiIntents.pas';
+  BroadcastReceiver in 'BroadcastReceiver.pas';
 
 {$R *.res}
 
